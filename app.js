@@ -22,6 +22,10 @@ const rutasRequests = require('./rutas_bd/solicitud_terminada'); //ruta de solic
 const rutasSolicitudPendiente = require('./rutas_app/solicitud');
 const rutaNuevaSolicitud=""; //falta
 const rutaLogin = require('./rutas_app/login'); 
+//-----------------ruta para pruebas----------------------------------------
+const rutapruebas = require('./rutas_app/pruebas');
+
+
 
 //incluir controladores de tutas para app:
 app.use('/users', rutasUsuario); //localhost:3000/users/all <-- ejemplo
@@ -34,6 +38,7 @@ app.use('/requests',rutasRequests) //localhost:3000/requests/all <-- ejemplo
 //rutas de la aplicacion
 app.use('/solicitud',rutasSolicitudPendiente);
 app.use('/login',rutaLogin);
+app.use('/pruebas',rutapruebas);
 //------------------ruta para la solicitud----------------------------------lado del operador
 
 //exportamos todas las configuraciones de la app

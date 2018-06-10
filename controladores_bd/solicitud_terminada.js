@@ -38,6 +38,7 @@ function getRequestsXIdSolicitante(req, res){
         soli.am AS "solicitante_am", 
         soli.telefono AS "solicitante_telefono", 
         serv.descripcion,
+        ope.genero,
         ope.nombre AS "operador_nombre", 
         ope.ap AS "operador_ap", 
         ope.am AS "operador_am", 

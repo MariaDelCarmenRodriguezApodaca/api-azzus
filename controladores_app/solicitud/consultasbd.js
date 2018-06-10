@@ -23,9 +23,14 @@ let consultaBd = (sql, callback)=>{
             console.log(`sin resultados : controladores_app/solicitud/consultas  let consultaBd sin resultados `)
         } 
         callback(result);
-        console.log('Se realizo consulta con exito ')
+        console.log('Se realizo consulta con exito ');
+        connection.destroy();
     });
 }
 
+
+module.exports={
+    consultaBd
+}
 
 

@@ -13,10 +13,10 @@ function login(req,res){
     var sql = "";
     if(correo != -1){
         //console.log('es correo');
-        sql = `SELECT id_usuario,nombre, ap,am,correo, telefono,password,estatus FROM usuarios WHERE correo = '${usuario}'`;
+        sql = `SELECT id_usuario,nombre, ap,am,correo, telefono,password,estatus,genero FROM usuarios WHERE correo = '${usuario}'`;
     }else{
         //console.log('es telefono');
-        sql = `SELECT id_usuario,nombre, ap,am,correo, telefono,password,estatus FROM usuarios WHERE telefono = '${usuario}'`;
+        sql = `SELECT id_usuario,nombre, ap,am,correo, telefono,password,estatus,genero FROM usuarios WHERE telefono = '${usuario}'`;
     }
     var connection = dbConnection();
     connection.query(sql,(err,result,fields)=>{
