@@ -5,6 +5,7 @@ let config = require('../../config');
 let dbConnection = config.connection;
 let request = require('request');
 let basicas = require('../basicas');
+let consultaBd = require('./consultasBd');
 //TABLA DE OPERADORES ACTIVOS 
 let operadores = []; 
 //TABLA DE SOLICITUDES 
@@ -159,12 +160,10 @@ function nuevaSolicitud(req,res){
     mujer = req.body.mujer,conTransporte = req.body.conTransporte,idServicio = req.body.id_servicio,
     fecha = req.body.fecha,hora = req.body.hora, descripcion=req.body.descripcion, nombreServicio = req.body.nombre_servicio;
     //buscamos al solicitante en la base de datos
-    var connection  = dbConnection();
-    connection.query(`SELECT * FROM usuarios WHERE id_usuario= ${id_solicitante}`, function(err,result,fields){
-        let error = false;
-        if (err){res.status(500).send({ message: `Error al realizar la consulta : ${err}` }); error = true; }
-        if (result == ""){ res.status(404).send({ message: `no existe el solicitanet` }); error = true }  
-        if (error==false){
+    let sql = `SELECT * FROM usuarios WHERE id_usuario= ${id_solicitante}`;
+    consultaBd.consultaBd(sql,(result)=>{
+        if(result) {
+            console.log(result);
             let nombreSolicitante = result[0].nombre + " " + result[0].ap + " " + result[0].am ;  
             let telefono = result[0].telefono;
             let correo = result[0].correo;
@@ -179,8 +178,9 @@ function nuevaSolicitud(req,res){
                             }); 
             res.status(200).send({ message: `Solicitud enviada de : ${ nombreSolicitante }` });
         }
-        connection.destroy();
+
     });
+    
 }
 //res servidor a solicitante /EL SERVIDOR RESPONDE A SOLICITANTES DESPUES DE MANDAR SOLICITUD
 function responderSolicitudASolicitante(req,res){
@@ -194,35 +194,28 @@ function responderSolicitudASolicitante(req,res){
         let id_servicio = solicitudes[solicitud].id_servicio;
         //console.log(`id operador: ${ id_operador }, id_servicio: ${ id_servicio }`);
         let data = {};
-        let connection = dbConnection();
-        connection.query(`Select * FROM usuarios WHERE id_usuario = ${ id_operador }`,(err,result,fields)=>{
-            var error = false;
-            if (err){res.status(500).send({ message: `Error al realizar la consulta : ${err}` }); error = true;
-            }else if (result == ""){ return res.status(404).send({ message: `no existe el operador` }); error = true; }
-            if(error == false){
+        
+        let sql = `Select * FROM usuarios WHERE id_usuario = ${ id_operador }`; 
+        consultaBd.consultaBd(sql,(result)=>{
+            if(result){
                 console.log(`PRUEBA: si la aceptaron 2`);
                 data.nombreOperador = result[0].nombre + " " + result[0].ap + " " + result[0].am ;
                 data.telefonoOperador = result[0].telefono;
-                let connection2 = dbConnection();
-                connection2.query("SELECT * FROM servicio WHERE id_servicio =" + id_servicio,(err, result, fields)=>{
-                if (err){ res.status(500).send({ message: `Error al realizar la consulta : ${err}` }); error = true;} 
-                if (result == ""){ res.status(404).send({ message: `El servicio no existe` }); error=true;} 
-                if(error == false){
-                    console.log(`PRUEBA: si la aceptaron 3`);
+                
+            }
+        })
+        sql = `SELECT * FROM servicio WHERE id_servicio = ${id_servicio}`;
+        consultaBd.consultaBd(sql,(result)=>{
+            if(result){
+                console.log(`PRUEBA: si la aceptaron 3`);
                     data.servicio=result[0].descripcion;
                     data.costoMax = result[0].costo_max;
                     data.costoMin=  result[0].costo_min;
                     data.lat = lat;
                     data.lng = lng;
-                    res.status(200).send({message:[{'flag':'true','cuerpo':[data]}]}); 
-                }
-                connection2.destroy();
-                }); 
+                    res.status(200).send({message:[{'flag':'true','cuerpo':[data]}]});
             }
-            
-            connection.destroy();
-            
-        });
+        })                  
     
     }else if(solicitudes[solicitud].estatus=='pendiente'){
         buscarOperadorPorFiltros(solicitudes[solicitud].id_solicitante); //si aun no la aceptan se busca al operador de nuevo

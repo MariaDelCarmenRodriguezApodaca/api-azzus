@@ -6,14 +6,7 @@ let dbConnection = config.connection;
 let request = require('request');
 let basicas = require('../basicas');
 
-//buscar operador va a recivir el id y un callback que es la funcion que ejecutara al encontrar al operador
-// let buscarOperador = (id,callback) => {
-//     let sql = `SELECT * FROM usuario WHERE id_usuario = ${id}`;
-    
-//     callback();
-// }
-
-
+//realizar consulta de bd
 let consultaBd = (sql, callback)=>{
     let connection = dbConnection();
     connection.query(sql,(err,result,fields)=>{
