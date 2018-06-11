@@ -31,7 +31,7 @@ function getRequestsXIdSolicitante(req, res){
         * ---------
         * costo del servicio   ->                          #1
         */
-
+        //Cambiar consulta hacer mas entendible quitando lo As a las tablas
     connection.query(`
         SELECT 
         solicitud_terminada.fecha,
@@ -67,7 +67,7 @@ function getRequestsXIdSolicitante(req, res){
     });
 }
 
-function getRequestsXIdOperador(req, res){
+let getRequestsXIdOperador = (req, res) => {
     //localhost:3000/requests/xo/:idOperador
     var idOperador = req.params.idOperador;
     var connection  = dbConnection();
@@ -100,15 +100,115 @@ function getRequestsXIdOperador(req, res){
         on solicitud_terminada.id_operador = ope.id_usuario 
         WHERE solicitud_terminada.id_operador=${idOperador}
         `, function(err, result, fields){
-            if (err) return res.status(500).send({ message: `Error al realizar la consulta : ${err}` });
-            if (result == "") return res.status(404).send({ message: `No hay solicitudes guardadas con ese usuario` });
-            connection.query("",function(err,result,fields){
-
-        });
-        res.status(200).send({ message: result });
+            if (err) {
+                res.status(500).send({ message: `Error al realizar la consulta : ${err}` });
+            } else if (result == ""){
+                res.status(404).send({ message: `No hay solicitudes guardadas con ese usuario` });
+            } else 
+            res.status(200).send({ message: result });
         connection.destroy();
     });
 }
+
+//PERSONALIZADA:
+//me mandara id_solicitante,filtro{dia,semana,mes}
+let historialXFechaXSolicitante = (req,res) => {
+    var idSolicitante = req.params.idSolicitante;
+    let sql = `
+    SELECT 
+    solicitud_terminada.fecha,
+    solicitud_terminada.hora,
+    solicitud_terminada.costo,
+    id_solicitud, id_solicitante, 
+    soli.nombre AS "solicitante_nombre", 
+    soli.ap AS "solicitante_ap", 
+    soli.am AS "solicitante_am", 
+    soli.telefono AS "solicitante_telefono", 
+    serv.descripcion,
+    ope.genero,
+    ope.nombre AS "operador_nombre", 
+    ope.ap AS "operador_ap", 
+    ope.am AS "operador_am", 
+    ope.telefono AS "operador_telefono"
+    FROM solicitud_terminada
+    INNER JOIN usuarios as soli 
+    on solicitud_terminada.id_solicitante = soli.id_usuario 
+    INNER JOIN servicio as serv 
+    on serv.id_servicio = solicitud_terminada.id_servicio 
+    INNER JOIN usuarios as ope 
+    on solicitud_terminada.id_operador = ope.id_usuario 
+    WHERE solicitud_terminada.id_solicitante= ${idSolicitante}
+    `;
+    if(req.params.filtro == 'dia'){
+        sql += ' AND solicitud_terminada.fecha= CURDATE()';
+    }else if(req.params.filtro == 'semana'){
+        sql += ' AND solicitud_terminada.fecha > DATE_SUB(NOW(),INTERVAL 7 DAY)'
+    }else if(req.params.filtro == 'mes'){
+        sql += ' AND solicitud_terminada.fecha > DATE_SUB(NOW(),INTERVAL 1 MONTH)';
+    }
+    var connection = dbConnection();
+    console.log('query de historial con filtros: ', sql);
+    connection.query(sql, function (err, result, fields){
+        if(err){
+            console.log(`Error al realizar la consulta : ${err}`)
+        }else if(result != ""){
+            res.status(200).send({ message: result });
+        }else{
+            console.log('No hay resultados')
+            res.status(200).send({ message: `No hay resultados` });
+        } 
+        connection.destroy();
+    });
+    
+}
+
+//PERSONALIZADA:
+//me mandara id_solicitante, fecha_inicio, fecha_fin
+let historialXFechaInicioFinXSolicitante = (req,res) => {
+    let idSolicitante = req.params.idSolicitante;
+    let fechaInicio = req.params.inicio;
+    let fechaFin = req.params.fin;
+    let sql = `
+    SELECT 
+    solicitud_terminada.fecha,
+    solicitud_terminada.hora,
+    solicitud_terminada.costo,
+    id_solicitud, id_solicitante, 
+    soli.nombre AS "solicitante_nombre", 
+    soli.ap AS "solicitante_ap", 
+    soli.am AS "solicitante_am", 
+    soli.telefono AS "solicitante_telefono", 
+    serv.descripcion,
+    ope.genero,
+    ope.nombre AS "operador_nombre", 
+    ope.ap AS "operador_ap", 
+    ope.am AS "operador_am", 
+    ope.telefono AS "operador_telefono"
+    FROM solicitud_terminada
+    INNER JOIN usuarios as soli 
+    on solicitud_terminada.id_solicitante = soli.id_usuario 
+    INNER JOIN servicio as serv 
+    on serv.id_servicio = solicitud_terminada.id_servicio 
+    INNER JOIN usuarios as ope 
+    on solicitud_terminada.id_operador = ope.id_usuario 
+    WHERE solicitud_terminada.id_solicitante= ${idSolicitante}
+    AND solicitud_terminada.fecha >= '${fechaInicio}' <= '${fechaFin}'`;
+    var connection = dbConnection();
+    console.log('query de historial con filtros: ', sql);
+    connection.query(sql, function (err, result, fields){
+        if(err){
+            console.log(`Error al realizar la consulta : ${err}`)
+        }else if(result != ""){
+            res.status(200).send({ message: result });
+        }else{
+            console.log('No hay resultados')
+            res.status(200).send({ message: `No hay resultados` });
+        } 
+        connection.destroy();
+    });
+    
+}
+
 
 
 //nueva solicitud
@@ -155,5 +255,7 @@ module.exports = {
     newRequest,
     getRequestsXIdSolicitante,
     getRequestsXIdOperador,
-    updateStatusRequest
+    updateStatusRequest,
+    historialXFechaXSolicitante,
+    historialXFechaInicioFinXSolicitante
 };
