@@ -1,10 +1,7 @@
 'use strict'
-let mysql = require('mysql');
-let moment = require('moment');
-let config = require('../../config');
-let dbConnection = config.connection;
+// let moment = require('moment');
 let request = require('request');
-let basicas = require('../basicas');
+// let basicas = require('../basicas');
 let consultaBd = require('./consultasBd');
 //TABLA DE OPERADORES ACTIVOS 
 let operadores = []; 
@@ -73,7 +70,7 @@ function verificarRechazo(id){
     return {flag:flag,pos:pos};
 }
 //returna la distancia entre dos puntos
-function calcularDistancia(lat1,lng1,lat2,lng2){
+ function calcularDistancia(lat1,lng1,lat2,lng2){
     //https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=25.7502756,-108.9813402&destinations=25.7646791,-108.987061&key=AIzaSyBtWTMHlkpHzWZ943bH9yK5N3e78VgB8Gs
     var url = "https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins="+lat1+","+
                 lng1+"&destinations="+lat2+","+lng2+"&key=AIzaSyBtWTMHlkpHzWZ943bH9yK5N3e78VgB8Gs";
@@ -98,59 +95,47 @@ function calcularDistancia(lat1,lng1,lat2,lng2){
 
 function buscarOperadorPorFiltros(id_solicitante){
     if(operadores.length>1){
+        var rechazada, encontrado;
         let row = buscarSolicitud(id_solicitante);
         let id_servicio = solicitudes[row].id_servicio;
-        let connection = dbConnection();
         let sql = `SELECT * FROM servicioxusuario WHERE id_servicio = ${id_servicio}`;
-        connection.query(sql,(err,result,fields)=>{
-            if(err)console.log({message:`Error en la base de datos 1: ${err}`});
-            if(result =="") console.log({message:`No se encontro al usuario`});
-            if(result!="" && !err){
-                for(var i= 0; i < result.length; i++){
-                    var activo = buscarOperador(result[i].id_usuario);
-                    if(activo.flag){
-                        
-                        let idOperadorSeleccionado = operadores[activo.i-1];
-                        var encontrado = operadores[activo.i-1].id;
-                        var rechazada = verificarRechazo(encontrado);
-                        if(rechazada.flag == true){//verificamos si alguien rechazo la solicitud
-                            console.log(`La solicitud ya ha sido rechazada por el este solicitante.`); 
+        
+        console.log('sql: ',sql);
+        
+        
+        consultaBd.consultaBd(sql,(result)=>{ 
+            for(var i= 0; i < result.length; i++){
+                var activo = buscarOperador(result[i].id_usuario);
+                if(activo.flag){
+                    let idOperadorSeleccionado = operadores[activo.i-1];
+                    encontrado = operadores[activo.i-1].id;
+                    rechazada = verificarRechazo(encontrado).flag;
+                    if(encontrado != "" && rechazada == false){
+                        console.log(`operador encontrado: ${ encontrado }`);
+                        sql =`SELECT  id_usuario,nombre, ap, am,correo, telefono,password,estatus FROM usuarios WHERE id_usuario = ${encontrado}`;
+                        if( solicitudes[row].hombre == 'true' ){ 
+                            sql += ` AND genero = 'H'`;
+                            console.log('sql: ',sql);
+                        }else if( solicitudes[row].mujer == 'true' ){
+                            sql += ` AND genero = 'M'`;
+                            console.log('sql: ',sql);
                         }
+                        consultaBd.consultaBd(sql,(result)=>{
+                            if(result != false){
+                                solicitudes[row].operador = result[0].id_usuario;
+                                solicitudes[row].estatus = "pendiente";
+                                console.log(solicitudes[row]);
+                            }else
+                            console.log('Aun no hay operadores activos');
+                        })           
                     }
                 }
-                if(encontrado != "" && rechazada.flag == false){
-                    console.log(`operador encontrado: ${ encontrado }`);
-                    sql =`SELECT  id_usuario,nombre, ap, am,correo, telefono,password,estatus FROM usuarios WHERE id_usuario = ${encontrado}`;
-                    var connection2 = dbConnection(); 
-                    connection2.query(sql,(err,result,fields)=>{
-                        let error = false;
-                        if(err) {console.log({message:`Error en la base de datos 2: ${err}`}); error=true; connection.destroy(); }
-                        if(result =="") {console.log({message:`No se encontro al usuario`}); connection.destroy(); }
-                        if(result!="" && !error){
-                            //hasta aqui guarda en solicitudes[n].operador al operador que realiza el servicio solicitado
-                            solicitudes[row].operador = result[0].id_usuario;  
-                        }
-                        connection2.destroy();
-                    });
-                    
-                    
-                }
-                connection.destroy();
-            }
-            connection.destroy();
-        });
+            } 
+        }) 
     }else{
         console.log('Aun no hay operadores activos');
     }
-    
 }
-
-
-
-
-
-
-
 
 //cuando un solicitante manda solicitud
 function nuevaSolicitud(req,res){
@@ -176,7 +161,7 @@ function nuevaSolicitud(req,res){
                                 menorCosto:menorCosto,  hombre:hombre,  mujer:mujer,
                                 conTransporte:conTransporte, descripcion:descripcion
                             }); 
-            res.status(200).send({ message: `Solicitud enviada de : ${ nombreSolicitante }` });
+            res.status(200).send({ message: `Nueva solicitud enviada de : ${ nombreSolicitante }` });
         }
 
     });
@@ -192,7 +177,6 @@ function responderSolicitudASolicitante(req,res){
         let lat = solicitudes[solicitud].latOperador;
         let lng = solicitudes[solicitud].lngOperador;
         let id_servicio = solicitudes[solicitud].id_servicio;
-        //console.log(`id operador: ${ id_operador }, id_servicio: ${ id_servicio }`);
         let data = {};
         
         let sql = `Select * FROM usuarios WHERE id_usuario = ${ id_operador }`; 
@@ -221,9 +205,9 @@ function responderSolicitudASolicitante(req,res){
         buscarOperadorPorFiltros(solicitudes[solicitud].id_solicitante); //si aun no la aceptan se busca al operador de nuevo
         res.status(200).send({message:[{'flag':'false','cuerpo':[{'nombre':'estatus pendiente'}]}]});
     }else if(solicitudes[solicitud].estatus=='enEspera'){
-        res.status(200).send({message:[{'flag':'false','cuerpo':[{'nombre':'Esperando respuesta'}]}]});
+        res.status(200).send({message:[{'flag':'false','cuerpo':[{'nombre':'Esperando respuesta de operador'}]}]});
     }else{
-        res.status(200).send({message:[{'flag':'false','cuerpo':[{'nombre':'esperando respuesta'}]}]});
+        res.status(200).send({message:[{'flag':'false','cuerpo':[{'nombre':'buscando operador'}]}]});
     }
 }
 
@@ -309,11 +293,6 @@ function operadorRechazoSolicitud(req,res){
     console.log(`El operador ${ arregloSolicitudRechazada[0].idSolicitante } rechazo la solicitud de ${ id_solicitante }`);
     res.status(200).send({message:['Mamon']});
 }
-
-
-
-
-
 
 
 

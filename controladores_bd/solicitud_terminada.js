@@ -31,8 +31,11 @@ function getRequestsXIdSolicitante(req, res){
         * ---------
         * costo del servicio   ->                          #1
         */
+       
     connection.query(`
-        SELECT id_solicitud, id_solicitante, 
+        SELECT 
+        solicitud_terminada.fecha,
+        id_solicitud, id_solicitante, 
         soli.nombre AS "solicitante_nombre", 
         soli.ap AS "solicitante_ap", 
         soli.am AS "solicitante_am", 

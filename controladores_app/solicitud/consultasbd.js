@@ -12,8 +12,10 @@ let consultaBd = (sql, callback)=>{
     connection.query(sql,(err,result,fields)=>{
         if(err){
             console.log(`Error en : controladores_app/solicitud/consultas  let consultaBd ${err}`);
+            return false;
         }else if(result == ""){
-            console.log(`sin resultados : controladores_app/solicitud/consultas  let consultaBd sin resultados `)
+            console.log(`sin resultados : controladores_app/solicitud/consultas  let consultaBd sin resultados `);
+            return false;
         } 
         callback(result);
         console.log('Se realizo consulta con exito ');
