@@ -1,7 +1,7 @@
 'use strict'
 const express = require('express')
 const ruta = express.Router()
-const ctrlLogin = require('../controladores_app/login/login/login/login');
+const ctrlLogin = require('../controladores_app/login/login');
 
 ruta.post("/", ctrlLogin.login);
 

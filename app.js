@@ -21,7 +21,7 @@ const rutasRequests = require('./rutas_bd/solicitud'); //ruta de solicitudes
 //------------------rutas para la la solicitud------------------------------lado del solicitante
 const rutasSolicitudPendiente = require('./rutas_app/solicitud');
 const rutaNuevaSolicitud=""; //falta
-const rutaLogin = require('./rutas_app/login/login'); 
+const rutaLogin = require('./rutas_app/login'); 
 //-----------------ruta para pruebas----------------------------------------
 const rutapruebas = require('./rutas_app/pruebas');
 

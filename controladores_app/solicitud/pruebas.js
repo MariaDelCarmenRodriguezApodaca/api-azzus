@@ -5,7 +5,7 @@ let config = require('../../config');
 let dbConnection = config.connection;
 let request = require('request');
 let basicas = require('../basicas');
-let consultaBd = require('./consultasBd');
+let consultaBd = require('../consultasBd');
 
 let buscarOperador = (req,res)=>{
     let sql = `SELECT * FROM usuarios WHERE id_usuario = ${req.params.id}`;

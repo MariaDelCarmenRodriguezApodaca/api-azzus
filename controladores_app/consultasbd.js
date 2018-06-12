@@ -1,10 +1,10 @@
 'use strict'
 let mysql = require('mysql');
 let moment = require('moment');
-let config = require('../../config');
+let config = require('../config');
 let dbConnection = config.connection;
 let request = require('request');
-let basicas = require('../basicas');
+let basicas = require('./basicas');
 
 //realizar consulta de bd
 let consultaBd = (sql, callback)=>{
