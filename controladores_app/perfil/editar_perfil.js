@@ -3,8 +3,8 @@ const mysql = require('mysql');
 let consultaBd = require('../consultasBd');
 
 
-let editarPerfil = () => {
-    
+let editarPerfil = (req,res) => {
+  
 }
 
 module.exports = {

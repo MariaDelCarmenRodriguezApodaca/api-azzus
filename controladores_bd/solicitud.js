@@ -73,7 +73,7 @@ let getRequestsPendientesXIdSolicitante =(req, res)=>{
     var id_solicitante = req.params.idSolicitante;
     connection.query(`
             SELECT 
-            DATE_FORMAT(solicitud.fecha, "%Y/%m/%d") as fecha,
+            DATE_FORMAT(solicitud.fecha, "%Y-%m-%d") as fecha,
             solicitud.hora,
             solicitud.costo,
             id_solicitud, id_solicitante, 
@@ -121,7 +121,7 @@ let getRequestsXIdOperador = (req, res) => {
         */
     connection.query(`
         SELECT 
-        DATE_FORMAT(solicitud.fecha, "%Y/%m/%d") as fecha,
+        DATE_FORMAT(solicitud.fecha, "%Y-%m-%d") as fecha,
         solicitud.hora,
         solicitud.costo,
         id_solicitud, id_solicitante, 
@@ -169,7 +169,7 @@ let getRequestsPendientesXIdOperador = (req, res) => {
         */
     connection.query(`
         SELECT 
-        DATE_FORMAT(solicitud.fecha, "%Y/%m/%d") as fecha,
+        DATE_FORMAT(solicitud.fecha, "%Y-%m-%d") as fecha,
         solicitud.hora,
         solicitud.costo,
         id_solicitud, id_solicitante, 
