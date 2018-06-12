@@ -37,7 +37,7 @@ app.use('/requests',rutasRequests) //localhost:3000/requests/all <-- ejemplo
 
 //rutas de la aplicacion
 app.use('/solicitud',rutasSolicitudPendiente);
-app.use('/login/login',rutaLogin);
+app.use('/login',rutaLogin);
 app.use('/pruebas',rutapruebas);
 //------------------ruta para la solicitud----------------------------------lado del operador
 
