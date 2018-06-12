@@ -2,7 +2,7 @@
 // let moment = require('moment');
 let request = require('request');
 // let basicas = require('../basicas');
-let consultaBd = require('./consultasBd');
+let consultaBd = require('../consultasBd');
 //TABLA DE OPERADORES ACTIVOS 
 let operadores = []; 
 //TABLA DE SOLICITUDES 
@@ -104,30 +104,32 @@ function buscarOperadorPorFiltros(id_solicitante){
         
         
         consultaBd.consultaBd(sql,(result)=>{ 
-            for(var i= 0; i < result.length; i++){
-                var activo = buscarOperador(result[i].id_usuario);
-                if(activo.flag){
-                    let idOperadorSeleccionado = operadores[activo.i-1];
-                    encontrado = operadores[activo.i-1].id;
-                    rechazada = verificarRechazo(encontrado).flag;
-                    if(encontrado != "" && rechazada == false){
-                        console.log(`operador encontrado: ${ encontrado }`);
-                        sql =`SELECT  id_usuario,nombre, ap, am,correo, telefono,password,estatus FROM usuarios WHERE id_usuario = ${encontrado}`;
-                        if( solicitudes[row].hombre == 'true' ){ 
-                            sql += ` AND genero = 'H'`;
-                            console.log('sql: ',sql);
-                        }else if( solicitudes[row].mujer == 'true' ){
-                            sql += ` AND genero = 'M'`;
-                            console.log('sql: ',sql);
+            if(result!=false){
+                for(var i= 0; i < result.length; i++){
+                    var activo = buscarOperador(result[i].id_usuario);
+                    if(activo.flag){
+                        let idOperadorSeleccionado = operadores[activo.i-1];
+                        encontrado = operadores[activo.i-1].id;
+                        rechazada = verificarRechazo(encontrado).flag;
+                        if(encontrado != "" && rechazada == false){
+                            console.log(`operador encontrado: ${ encontrado }`);
+                            sql =`SELECT  id_usuario,nombre, ap, am,correo, telefono,password,estatus FROM usuarios WHERE id_usuario = ${encontrado}`;
+                            if( solicitudes[row].hombre == 'true' ){ 
+                                sql += ` AND genero = 'H'`;
+                                console.log('sql: ',sql);
+                            }else if( solicitudes[row].mujer == 'true' ){
+                                sql += ` AND genero = 'M'`;
+                                console.log('sql: ',sql);
+                            }
+                            consultaBd.consultaBd(sql,(result)=>{
+                                if(result != false){
+                                    solicitudes[row].operador = result[0].id_usuario;
+                                    solicitudes[row].estatus = "pendiente";
+                                    console.log(solicitudes[row]);
+                                }else
+                                console.log('Aun no hay operadores activos');
+                            })           
                         }
-                        consultaBd.consultaBd(sql,(result)=>{
-                            if(result != false){
-                                solicitudes[row].operador = result[0].id_usuario;
-                                solicitudes[row].estatus = "pendiente";
-                                console.log(solicitudes[row]);
-                            }else
-                            console.log('Aun no hay operadores activos');
-                        })           
                     }
                 }
             } 

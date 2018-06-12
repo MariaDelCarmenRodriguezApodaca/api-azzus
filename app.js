@@ -17,11 +17,11 @@ const rutasUsuario = require('./rutas_bd/usuario'); //rutas de los usuario
 const rutasTipoServicios = require('./rutas_bd/servicio'); //rutas de tipos de servicios
 const rutasTipoQuejas = require('./rutas_bd/tipoqueja'); //rutas de tipos de quejas
 const rutasComplains = require('./rutas_bd/queja'); //rutas de quejas
-const rutasRequests = require('./rutas_bd/solicitud_terminada'); //ruta de solicitudes
+const rutasRequests = require('./rutas_bd/solicitud'); //ruta de solicitudes
 //------------------rutas para la la solicitud------------------------------lado del solicitante
 const rutasSolicitudPendiente = require('./rutas_app/solicitud');
 const rutaNuevaSolicitud=""; //falta
-const rutaLogin = require('./rutas_app/login'); 
+const rutaLogin = require('./rutas_app/login/login'); 
 //-----------------ruta para pruebas----------------------------------------
 const rutapruebas = require('./rutas_app/pruebas');
 
@@ -37,7 +37,7 @@ app.use('/requests',rutasRequests) //localhost:3000/requests/all <-- ejemplo
 
 //rutas de la aplicacion
 app.use('/solicitud',rutasSolicitudPendiente);
-app.use('/login',rutaLogin);
+app.use('/login/login',rutaLogin);
 app.use('/pruebas',rutapruebas);
 //------------------ruta para la solicitud----------------------------------lado del operador
 

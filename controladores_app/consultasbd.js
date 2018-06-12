@@ -12,10 +12,10 @@ let consultaBd = (sql, callback)=>{
     connection.query(sql,(err,result,fields)=>{
         if(err){
             console.log(`Error en : controladores_app/solicitud/consultas  let consultaBd ${err}`);
-            return false;
+            result= false;
         }else if(result == ""){
             console.log(`sin resultados : controladores_app/solicitud/consultas  let consultaBd sin resultados `);
-            return false;
+            result= false;
         } 
         callback(result);
         console.log('Se realizo consulta con exito ');
@@ -24,8 +24,24 @@ let consultaBd = (sql, callback)=>{
 }
 
 
+//update 
+let actualizar = (sql, callback) =>{
+    connection.query(sql, function(err, result) {
+        if (err){
+            console.log(`Error al actualizar el dato : ${err} , sql = ${sql}`)
+        }else if(result == ""){
+            console.log(`sin resultados : controladores_app/solicitud/consultas  let consultaBd sin resultados `);
+            result= false;
+        } 
+        callback(result);
+        console.log('Se actualizo con exito ');
+        connection.destroy();
+    });
+}
+
 module.exports={
-    consultaBd
+    consultaBd,
+    actualizar
 }
 
 

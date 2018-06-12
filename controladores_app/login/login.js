@@ -5,7 +5,7 @@ const dbConnection = config.connection;
 
 
 
-//localhost:3000/login/
+//localhost:3000/login/login/
 function login(req,res){
     var usuario = req.body.usuario; 
     var password = req.body.password;

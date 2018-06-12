@@ -1,7 +1,7 @@
 'use strict'
 const express = require('express')
 const ruta = express.Router()
-const ctrlSolicitud = require('../controladores_bd/solicitud_terminada')
+const ctrlSolicitud = require('../controladores_bd/solicitud')
 
 
 

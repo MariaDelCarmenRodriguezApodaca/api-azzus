@@ -33,29 +33,30 @@ function getRequestsXIdSolicitante(req, res){
         */
         //Cambiar consulta hacer mas entendible quitando lo As a las tablas
     connection.query(`
-        SELECT 
-        solicitud_terminada.fecha,
-        solicitud_terminada.hora,
-        solicitud_terminada.costo,
-        id_solicitud, id_solicitante, 
-        soli.nombre AS "solicitante_nombre", 
-        soli.ap AS "solicitante_ap", 
-        soli.am AS "solicitante_am", 
-        soli.telefono AS "solicitante_telefono", 
-        serv.descripcion,
-        ope.genero,
-        ope.nombre AS "operador_nombre", 
-        ope.ap AS "operador_ap", 
-        ope.am AS "operador_am", 
-        ope.telefono AS "operador_telefono"
-        FROM solicitud_terminada
-        INNER JOIN usuarios as soli 
-        on solicitud_terminada.id_solicitante = soli.id_usuario 
-        INNER JOIN servicio as serv 
-        on serv.id_servicio = solicitud_terminada.id_servicio 
-        INNER JOIN usuarios as ope 
-        on solicitud_terminada.id_operador = ope.id_usuario 
-        WHERE solicitud_terminada.id_solicitante=${id_solicitante}
+            SELECT 
+            solicitud.fecha,
+            solicitud.hora,
+            solicitud.costo,
+            id_solicitud, id_solicitante, 
+            soli.nombre AS "solicitante_nombre", 
+            soli.ap AS "solicitante_ap", 
+            soli.am AS "solicitante_am", 
+            soli.telefono AS "solicitante_telefono", 
+            serv.descripcion,
+            ope.genero,
+            ope.nombre AS "operador_nombre", 
+            ope.ap AS "operador_ap", 
+            ope.am AS "operador_am", 
+            ope.telefono AS "operador_telefono"
+            FROM solicitud
+            INNER JOIN usuarios as soli 
+            on solicitud.id_solicitante = soli.id_usuario 
+            INNER JOIN servicio as serv 
+            on serv.id_servicio = solicitud.id_servicio 
+            INNER JOIN usuarios as ope 
+            on solicitud.id_operador = ope.id_usuario 
+            WHERE solicitud.id_solicitante=${id_solicitante}
+            AND solicitud.estatus = 'TERMINADO'
         `, function(err, result, fields){
             if (err) return res.status(500).send({ message: `Error al realizar la consulta : ${err}` });
             if (result == "") return res.status(404).send({ message: `No hay solicitudes guardadas con ese usuario` });
@@ -91,14 +92,15 @@ let getRequestsXIdOperador = (req, res) => {
         ope.ap AS "operador_ap", 
         ope.am AS "operador_am", 
         ope.telefono AS "operador_telefono"
-        FROM solicitud_terminada
+        FROM solicitud
         INNER JOIN usuarios as soli 
-        on solicitud_terminada.id_solicitante = soli.id_usuario 
+        on solicitud.id_solicitante = soli.id_usuario 
         INNER JOIN servicio as serv 
-        on serv.id_servicio = solicitud_terminada.id_servicio 
+        on serv.id_servicio = solicitud.id_servicio 
         INNER JOIN usuarios as ope 
-        on solicitud_terminada.id_operador = ope.id_usuario 
-        WHERE solicitud_terminada.id_operador=${idOperador}
+        on solicitud.id_operador = ope.id_usuario 
+        WHERE solicitud.id_operador=${idOperador}
+        AND solicitud.estatus = 'TERMINADO'
         `, function(err, result, fields){
             if (err) {
                 res.status(500).send({ message: `Error al realizar la consulta : ${err}` });
@@ -116,9 +118,9 @@ let historialXFechaXSolicitante = (req,res) => {
     var idSolicitante = req.params.idSolicitante;
     let sql = `
     SELECT 
-    solicitud_terminada.fecha,
-    solicitud_terminada.hora,
-    solicitud_terminada.costo,
+    solicitud.fecha,
+    solicitud.hora,
+    solicitud.costo,
     id_solicitud, id_solicitante, 
     soli.nombre AS "solicitante_nombre", 
     soli.ap AS "solicitante_ap", 
@@ -130,21 +132,22 @@ let historialXFechaXSolicitante = (req,res) => {
     ope.ap AS "operador_ap", 
     ope.am AS "operador_am", 
     ope.telefono AS "operador_telefono"
-    FROM solicitud_terminada
+    FROM solicitud
     INNER JOIN usuarios as soli 
-    on solicitud_terminada.id_solicitante = soli.id_usuario 
+    on solicitud.id_solicitante = soli.id_usuario 
     INNER JOIN servicio as serv 
-    on serv.id_servicio = solicitud_terminada.id_servicio 
+    on serv.id_servicio = solicitud.id_servicio 
     INNER JOIN usuarios as ope 
-    on solicitud_terminada.id_operador = ope.id_usuario 
-    WHERE solicitud_terminada.id_solicitante= ${idSolicitante}
+    on solicitud.id_operador = ope.id_usuario 
+    WHERE solicitud.id_solicitante= ${idSolicitante}
+    AND solicitud.estatus = 'TERMINADO'
     `;
     if(req.params.filtro == 'dia'){
-        sql += ' AND solicitud_terminada.fecha= CURDATE()';
+        sql += ' AND solicitud.fecha= CURDATE()';
     }else if(req.params.filtro == 'semana'){
-        sql += ' AND solicitud_terminada.fecha > DATE_SUB(NOW(),INTERVAL 7 DAY)'
+        sql += ' AND solicitud.fecha > DATE_SUB(NOW(),INTERVAL 7 DAY)'
     }else if(req.params.filtro == 'mes'){
-        sql += ' AND solicitud_terminada.fecha > DATE_SUB(NOW(),INTERVAL 1 MONTH)';
+        sql += ' AND solicitud.fecha > DATE_SUB(NOW(),INTERVAL 1 MONTH)';
     }
     var connection = dbConnection();
     console.log('query de historial con filtros: ', sql);
@@ -170,9 +173,9 @@ let historialXFechaInicioFinXSolicitante = (req,res) => {
     let fechaFin = req.params.fin;
     let sql = `
     SELECT 
-    solicitud_terminada.fecha,
-    solicitud_terminada.hora,
-    solicitud_terminada.costo,
+    solicitud.fecha,
+    solicitud.hora,
+    solicitud.costo,
     id_solicitud, id_solicitante, 
     soli.nombre AS "solicitante_nombre", 
     soli.ap AS "solicitante_ap", 
@@ -184,15 +187,17 @@ let historialXFechaInicioFinXSolicitante = (req,res) => {
     ope.ap AS "operador_ap", 
     ope.am AS "operador_am", 
     ope.telefono AS "operador_telefono"
-    FROM solicitud_terminada
+    FROM solicitud
     INNER JOIN usuarios as soli 
-    on solicitud_terminada.id_solicitante = soli.id_usuario 
+    on solicitud.id_solicitante = soli.id_usuario 
     INNER JOIN servicio as serv 
-    on serv.id_servicio = solicitud_terminada.id_servicio 
+    on serv.id_servicio = solicitud.id_servicio 
     INNER JOIN usuarios as ope 
-    on solicitud_terminada.id_operador = ope.id_usuario 
-    WHERE solicitud_terminada.id_solicitante= ${idSolicitante}
-    AND solicitud_terminada.fecha >= '${fechaInicio}' <= '${fechaFin}'`;
+    on solicitud.id_operador = ope.id_usuario 
+    WHERE solicitud.id_solicitante= ${idSolicitante}
+    AND solicitud.fecha >= '${fechaInicio}' <= '${fechaFin}'
+    AND solicitud.estatus = 'TERMINADO'
+    `;
     var connection = dbConnection();
     console.log('query de historial con filtros: ', sql);
     connection.query(sql, function (err, result, fields){
@@ -212,9 +217,9 @@ let historialXFechaXOperador = (req,res) => {
     var idOperador = req.params.idOperador;
     let sql = `
     SELECT 
-    solicitud_terminada.fecha,
-    solicitud_terminada.hora,
-    solicitud_terminada.costo,
+    solicitud.fecha,
+    solicitud.hora,
+    solicitud.costo,
     id_solicitud, id_solicitante, 
     soli.nombre AS "solicitante_nombre", 
     soli.ap AS "solicitante_ap", 
@@ -226,21 +231,22 @@ let historialXFechaXOperador = (req,res) => {
     ope.ap AS "operador_ap", 
     ope.am AS "operador_am", 
     ope.telefono AS "operador_telefono"
-    FROM solicitud_terminada
+    FROM solicitud
     INNER JOIN usuarios as soli 
-    on solicitud_terminada.id_solicitante = soli.id_usuario 
+    on solicitud.id_solicitante = soli.id_usuario 
     INNER JOIN servicio as serv 
-    on serv.id_servicio = solicitud_terminada.id_servicio 
+    on serv.id_servicio = solicitud.id_servicio 
     INNER JOIN usuarios as ope 
-    on solicitud_terminada.id_operador = ope.id_usuario 
-    WHERE solicitud_terminada.id_operador= ${idOperador}
+    on solicitud.id_operador = ope.id_usuario 
+    WHERE solicitud.id_operador= ${idOperador}
+    AND solicitud.estatus = 'TERMINADO'
     `;
     if(req.params.filtro == 'dia'){
-        sql += ' AND solicitud_terminada.fecha= CURDATE()';
+        sql += ' AND solicitud.fecha= CURDATE()';
     }else if(req.params.filtro == 'semana'){
-        sql += ' AND solicitud_terminada.fecha > DATE_SUB(NOW(),INTERVAL 7 DAY)'
+        sql += ' AND solicitud.fecha > DATE_SUB(NOW(),INTERVAL 7 DAY)'
     }else if(req.params.filtro == 'mes'){
-        sql += ' AND solicitud_terminada.fecha > DATE_SUB(NOW(),INTERVAL 1 MONTH)';
+        sql += ' AND solicitud.fecha > DATE_SUB(NOW(),INTERVAL 1 MONTH)';
     }
     var connection = dbConnection();
     console.log('query de historial con filtros: ', sql);
@@ -266,9 +272,9 @@ let historialXFechaInicioFinXOperador = (req,res) => {
     let fechaFin = req.params.fin;
     let sql = `
     SELECT 
-    solicitud_terminada.fecha,
-    solicitud_terminada.hora,
-    solicitud_terminada.costo,
+    solicitud.fecha,
+    solicitud.hora,
+    solicitud.costo,
     id_solicitud, id_solicitante, 
     soli.nombre AS "solicitante_nombre", 
     soli.ap AS "solicitante_ap", 
@@ -280,15 +286,17 @@ let historialXFechaInicioFinXOperador = (req,res) => {
     ope.ap AS "operador_ap", 
     ope.am AS "operador_am", 
     ope.telefono AS "operador_telefono"
-    FROM solicitud_terminada
+    FROM solicitud
     INNER JOIN usuarios as soli 
-    on solicitud_terminada.id_solicitante = soli.id_usuario 
+    on solicitud.id_solicitante = soli.id_usuario 
     INNER JOIN servicio as serv 
-    on serv.id_servicio = solicitud_terminada.id_servicio 
+    on serv.id_servicio = solicitud.id_servicio 
     INNER JOIN usuarios as ope 
-    on solicitud_terminada.id_operador = ope.id_usuario 
-    WHERE solicitud_terminada.id_operador= ${idOperador}
-    AND solicitud_terminada.fecha >= '${fechaInicio}' <= '${fechaFin}'`;
+    on solicitud.id_operador = ope.id_usuario 
+    WHERE solicitud.id_operador= ${idOperador}
+    AND solicitud.fecha >= '${fechaInicio}' <= '${fechaFin}'
+    AND solicitud.estatus = 'TERMINADO'
+    `;
     var connection = dbConnection();
     console.log('query de historial con filtros: ', sql);
     connection.query(sql, function (err, result, fields){
