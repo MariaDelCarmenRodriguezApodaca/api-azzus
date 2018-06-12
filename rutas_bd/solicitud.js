@@ -13,5 +13,8 @@ ruta.get("/xs/:idSolicitante/:inicio/:fin", ctrlSolicitud.historialXFechaInicioF
 ruta.get("/xo/:idOperador/:filtro", ctrlSolicitud.historialXFechaXOperador);
 ruta.get("/xo/:idOperador/:inicio/:fin", ctrlSolicitud.historialXFechaInicioFinXOperador);
 
+ruta.get("/pendiente/xs/:idSolicitante", ctrlSolicitud.getRequestsPendientesXIdSolicitante);
+ruta.get("/pendiente/xo/:idOperador", ctrlSolicitud.getRequestsPendientesXIdOperador);
+
 
 module.exports = ruta;

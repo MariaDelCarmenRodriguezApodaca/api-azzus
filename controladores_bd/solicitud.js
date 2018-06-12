@@ -68,6 +68,44 @@ function getRequestsXIdSolicitante(req, res){
     });
 }
 
+let getRequestsPendientesXIdSolicitante =(req, res)=>{
+    var connection  = dbConnection();
+    var id_solicitante = req.params.idSolicitante;
+    connection.query(`
+            SELECT 
+            DATE_FORMAT(solicitud.fecha, "%Y/%m/%d") as fecha,
+            solicitud.hora,
+            solicitud.costo,
+            id_solicitud, id_solicitante, 
+            soli.nombre AS "solicitante_nombre", 
+            soli.ap AS "solicitante_ap", 
+            soli.am AS "solicitante_am", 
+            soli.telefono AS "solicitante_telefono", 
+            serv.descripcion,
+            ope.genero,
+            ope.nombre AS "operador_nombre", 
+            ope.ap AS "operador_ap", 
+            ope.am AS "operador_am", 
+            ope.telefono AS "operador_telefono"
+            FROM solicitud
+            INNER JOIN usuarios as soli 
+            on solicitud.id_solicitante = soli.id_usuario 
+            INNER JOIN servicio as serv 
+            on serv.id_servicio = solicitud.id_servicio 
+            INNER JOIN usuarios as ope 
+            on solicitud.id_operador = ope.id_usuario 
+            WHERE solicitud.id_solicitante=${id_solicitante}
+            AND solicitud.estatus = 'PENDIENTE' `
+            , function(err, result, fields){
+            if (err) return res.status(500).send({ message: `Error al realizar la consulta : ${err}` });
+            if (result == "") return res.status(404).send({ message: `No hay solicitudes guardadas con ese usuario` });
+            connection.query("",function(err,result,fields){
+        });
+        res.status(200).send({ message: result });
+        connection.destroy();
+    });
+}
+
 let getRequestsXIdOperador = (req, res) => {
     //localhost:3000/requests/xo/:idOperador
     var idOperador = req.params.idOperador;
@@ -82,7 +120,11 @@ let getRequestsXIdOperador = (req, res) => {
         * costo del servicio   ->                          #1
         */
     connection.query(`
-        SELECT id_solicitud, id_solicitante, 
+        SELECT 
+        DATE_FORMAT(solicitud.fecha, "%Y/%m/%d") as fecha,
+        solicitud.hora,
+        solicitud.costo,
+        id_solicitud, id_solicitante, 
         soli.nombre AS "solicitante_nombre", 
         soli.ap AS "solicitante_ap", 
         soli.am AS "solicitante_am", 
@@ -112,6 +154,53 @@ let getRequestsXIdOperador = (req, res) => {
     });
 }
 
+let getRequestsPendientesXIdOperador = (req, res) => {
+    //localhost:3000/requests/xo/:idOperador
+    var idOperador = req.params.idOperador;
+    var connection  = dbConnection();
+        /*
+        * nombre cliente       ->lo sacaremos con el id    #2
+        * nombre del operador  ->lo sacaremos con el id    #2
+        * servicio             ->                          #1 
+        * nombre del servicio  ->lo sacamos con el id      #3
+        * fecha                ->                          #1
+        * ---------
+        * costo del servicio   ->                          #1
+        */
+    connection.query(`
+        SELECT 
+        DATE_FORMAT(solicitud.fecha, "%Y/%m/%d") as fecha,
+        solicitud.hora,
+        solicitud.costo,
+        id_solicitud, id_solicitante, 
+        soli.nombre AS "solicitante_nombre", 
+        soli.ap AS "solicitante_ap", 
+        soli.am AS "solicitante_am", 
+        soli.telefono AS "solicitante_telefono", 
+        serv.descripcion,
+        ope.nombre AS "operador_nombre", 
+        ope.ap AS "operador_ap", 
+        ope.am AS "operador_am", 
+        ope.telefono AS "operador_telefono"
+        FROM solicitud
+        INNER JOIN usuarios as soli 
+        on solicitud.id_solicitante = soli.id_usuario 
+        INNER JOIN servicio as serv 
+        on serv.id_servicio = solicitud.id_servicio 
+        INNER JOIN usuarios as ope 
+        on solicitud.id_operador = ope.id_usuario 
+        WHERE solicitud.id_operador=${idOperador}
+        AND solicitud.estatus = 'PENDIENTE'
+        `, function(err, result, fields){
+            if (err) {
+                res.status(500).send({ message: `Error al realizar la consulta : ${err}` });
+            } else if (result == ""){
+                res.status(404).send({ message: `No hay solicitudes guardadas con ese usuario` });
+            } else 
+            res.status(200).send({ message: result });
+        connection.destroy();
+    });
+}
 //PERSONALIZADA:
 //me mandara id_solicitante,filtro{dia,semana,mes}
 let historialXFechaXSolicitante = (req,res) => {
@@ -363,5 +452,7 @@ module.exports = {
     historialXFechaXSolicitante,
     historialXFechaInicioFinXSolicitante,
     historialXFechaXOperador,
-    historialXFechaInicioFinXOperador
+    historialXFechaInicioFinXOperador,
+    getRequestsPendientesXIdOperador,
+    getRequestsPendientesXIdSolicitante
 };
