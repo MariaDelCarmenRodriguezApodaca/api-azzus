@@ -14,9 +14,6 @@ let buscarOperador = (req,res)=>{
     });
 }
 
-let modificarPerfil = (req,res)=>{
-    
-}
 
 module.exports={
     buscarOperador

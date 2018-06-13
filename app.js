@@ -22,6 +22,8 @@ const rutasRequests = require('./rutas_bd/solicitud'); //ruta de solicitudes
 const rutasSolicitudPendiente = require('./rutas_app/solicitud');
 const rutaNuevaSolicitud=""; //falta
 const rutaLogin = require('./rutas_app/login'); 
+//-------------------ruta del perfil -----------------------------------------
+const rutaPerfil = require('./rutas_app/perfil');
 //-----------------ruta para pruebas----------------------------------------
 const rutapruebas = require('./rutas_app/pruebas');
 
@@ -39,6 +41,7 @@ app.use('/requests',rutasRequests) //localhost:3000/requests/all <-- ejemplo
 app.use('/solicitud',rutasSolicitudPendiente);
 app.use('/login',rutaLogin);
 app.use('/pruebas',rutapruebas);
+app.use('/perfil',rutaPerfil);
 //------------------ruta para la solicitud----------------------------------lado del operador
 
 //exportamos todas las configuraciones de la app

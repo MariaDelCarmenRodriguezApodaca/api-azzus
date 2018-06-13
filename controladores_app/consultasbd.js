@@ -26,6 +26,7 @@ let consultaBd = (sql, callback)=>{
 
 //update 
 let actualizar = (sql, callback) =>{
+    let connection = dbConnection();
     connection.query(sql, function(err, result) {
         if (err){
             console.log(`Error al actualizar el dato : ${err} , sql = ${sql}`)
