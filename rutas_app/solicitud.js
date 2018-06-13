@@ -18,4 +18,5 @@ ruta.get('/operador/aceptar/:id/:id_solicitante',ctrlSolicitud.operadorAceptoSol
 
 ruta.get('/operador/rechazar/:id/:id_solicitante',ctrlSolicitud.operadorRechazoSolicitud);
 
+ruta.get('/operador/terminar/:idOperdaor/:idSolicitante',ctrlSolicitud.solicitudTerminada);
 module.exports = ruta;

@@ -220,7 +220,7 @@ function responderSolicitudASolicitante(req,res){
     }else if(solicitudes[solicitud].estatus=='pendiente'){
         buscarOperadorPorFiltros(solicitudes[solicitud].id_solicitante); //si aun no la aceptan se busca al operador de nuevo
         res.status(200).send({message:[{'flag':'false','cuerpo':[{'nombre':'estatus pendiente'}]}]});
-        console.log(solicitudes[solicitud]);
+        //console.log(solicitudes[solicitud]);
     }else if(solicitudes[solicitud].estatus=='enEspera'){
         res.status(200).send({message:[{'flag':'false','cuerpo':[{'nombre':'Esperando respuesta de operador'}]}]});
     }else{
@@ -286,11 +286,14 @@ function operadorAceptoSolicitud(req,res){
 
     solicitudes[solicitud].estatus='aceptada';
     solicitudes[solicitud].operador= id_operador;
+    solicitudes[solicitud].latOperador = operadores[flag.i-1].lat;
+    solicitudes[solicitud].lngOperador = operadores[flag.i-1].lng;
+
     console.log('SOLICITUD AGENDADA:',solicitudes[solicitud]);
 
    //AQUI VA LA FECHA POR EJEMPLO
    var date = new Date();
-   var fechaActual = moment(date).format('YYYY-MM-DD');
+   var fechaActual = moment(date).format('YYYY/MM/DD');
    console.log(` fechas ${ fechaActual } == ${solicitudes[solicitud].fecha}`);
    if(fechaActual < solicitudes[solicitud].fecha ){
        //aqui se guardara
@@ -350,8 +353,34 @@ function operadorRechazoSolicitud(req,res){
 }
 
 let solicitudTerminada = ( req,res ) => {
-    let solicitud = buscarSolicitud(req.params.idOperador);
+    let id_operador = req.params.idOperador;
+    let id_solicitante = req.params.idSolicitante;
+    let solicitud = buscarSolicitud(id_solicitante);
+    //let flag=buscarOperador(id_operador);
 
+    console.log('solicitud terminada: ',solicitudes[solicitud]);
+    let sql = `INSERT INTO solicitud 
+                (id_solicitud, id_solicitante, id_operador, id_servicio, fecha, hora, lat_inicio, lng_inicio, lat_fin, lng_fin, costo, estatus) 
+                VALUES 
+                ('NULL', 
+                '${solicitudes[solicitud].id_solicitante}',
+                '${solicitudes[solicitud].id_operador}',
+                '${solicitudes[solicitud].id_servicio}', 
+                '${solicitudes[solicitud].fecha}', 
+                '${solicitudes[solicitud].hora}', 
+                '${solicitudes[solicitud].latOperador}', 
+                '${solicitudes[solicitud].lngOperador}', 
+                '${solicitudes[solicitud].lat}', 
+                '${solicitudes[solicitud].lng}', 
+                '${solicitudes[solicitud].costo}', 
+                'TERMINADO'
+                )`;
+       consultaBd.insertar(sql,(result)=>{
+            if(result){
+                console.log('se guardo en la base de datos solicitud terminada');
+                res.status(200).send({message:[{'flag':'guardado','cuerpo':[]}]});
+            }
+       })
 }
 
 
@@ -361,5 +390,6 @@ module.exports={
     responderSolicitudASolicitante,
     operadorDesactivado,
     operadorAceptoSolicitud,
-    operadorRechazoSolicitud 
+    operadorRechazoSolicitud,
+    solicitudTerminada
 };

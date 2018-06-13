@@ -95,7 +95,7 @@ let getRequestsPendientesXIdSolicitante =(req, res)=>{
             INNER JOIN usuarios as ope 
             on solicitud.id_operador = ope.id_usuario 
             WHERE solicitud.id_solicitante=${id_solicitante}
-            AND solicitud.estatus = 'PENDIENTE' `
+            AND solicitud.estatus = 'AGENDADA' `
             , function(err, result, fields){
             if (err) return res.status(500).send({ message: `Error al realizar la consulta : ${err}` });
             if (result == "") return res.status(404).send({ message: `No hay solicitudes guardadas con ese usuario` });
@@ -192,7 +192,7 @@ let getRequestsPendientesXIdOperador = (req, res) => {
         INNER JOIN usuarios as ope 
         on solicitud.id_operador = ope.id_usuario 
         WHERE solicitud.id_operador=${idOperador}
-        AND solicitud.estatus = 'PENDIENTE'
+        AND solicitud.estatus = 'AGENDADA'
         `, function(err, result, fields){
             if (err) {
                 res.status(500).send({ message: `Error al realizar la consulta : ${err}` });
