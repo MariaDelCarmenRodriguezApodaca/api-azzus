@@ -303,7 +303,7 @@ function operadorAceptoSolicitud(req,res){
                 VALUES 
                 ('NULL', 
                 '${solicitudes[solicitud].id_solicitante}',
-                '${solicitudes[solicitud].id_operador}',
+                '${id_operador}',
                 '${solicitudes[solicitud].id_servicio}', 
                 '${solicitudes[solicitud].fecha}', 
                 '${solicitudes[solicitud].hora}', 
@@ -364,7 +364,7 @@ let solicitudTerminada = ( req,res ) => {
                 VALUES 
                 ('NULL', 
                 '${solicitudes[solicitud].id_solicitante}',
-                '${solicitudes[solicitud].id_operador}',
+                '${id_operador}',
                 '${solicitudes[solicitud].id_servicio}', 
                 '${solicitudes[solicitud].fecha}', 
                 '${solicitudes[solicitud].hora}', 
