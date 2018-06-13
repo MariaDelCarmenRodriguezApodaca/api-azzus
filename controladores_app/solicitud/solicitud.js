@@ -311,7 +311,7 @@ function operadorAceptoSolicitud(req,res){
                 '${operadores[flag.i-1].lng}', 
                 '${solicitudes[solicitud].lat}', 
                 '${solicitudes[solicitud].lng}', 
-                '${solicitudes[solicitud].costo}', 
+                '100', 
                 'AGENDADA'
                 )`;
        consultaBd.insertar(sql,(result)=>{
@@ -372,7 +372,7 @@ let solicitudTerminada = ( req,res ) => {
                 '${solicitudes[solicitud].lngOperador}', 
                 '${solicitudes[solicitud].lat}', 
                 '${solicitudes[solicitud].lng}', 
-                '${solicitudes[solicitud].costo}', 
+                '100', 
                 'TERMINADO'
                 )`;
        consultaBd.insertar(sql,(result)=>{
