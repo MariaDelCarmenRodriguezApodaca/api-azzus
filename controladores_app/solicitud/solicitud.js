@@ -293,7 +293,7 @@ function operadorAceptoSolicitud(req,res){
 
    //AQUI VA LA FECHA POR EJEMPLO
    var date = new Date();
-   var fechaActual = moment(date).format('YYYY/MM/DD');
+   var fechaActual = moment(date).format('YYYY-MM-DD');
    console.log(` fechas ${ fechaActual } == ${solicitudes[solicitud].fecha}`);
    if(fechaActual < solicitudes[solicitud].fecha ){
        //aqui se guardara
@@ -318,6 +318,7 @@ function operadorAceptoSolicitud(req,res){
             if(result){
                 console.log('se guardo en la base de datos solicitud agendada');
                 res.status(200).send({message:[{'flag':'guardado','cuerpo':[]}]});
+                solicitudes.splice(solicitud,1);
             }
        })
    }else{
@@ -379,6 +380,7 @@ let solicitudTerminada = ( req,res ) => {
             if(result){
                 console.log('se guardo en la base de datos solicitud terminada');
                 res.status(200).send({message:[{'flag':'guardado','cuerpo':[]}]});
+                solicitudes.splice(solicitud,1);
             }
        })
 }
