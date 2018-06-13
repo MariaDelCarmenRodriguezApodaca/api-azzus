@@ -40,9 +40,26 @@ let actualizar = (sql, callback) =>{
     });
 }
 
+//update 
+let insertar = (sql, callback) =>{
+    let connection = dbConnection();
+    connection.query(sql, function(err, result) {
+        if (err){
+            console.log(`Error al agregar el dato : ${err} , sql = ${sql}`)
+        }else if(result == ""){
+            console.log(`sin resultados : controladores_app/solicitud/consultas  let consultaBd sin resultados `);
+            result= false;
+        } 
+        callback(result);
+        console.log('Se agrego solicitud agendada con exito ');
+        connection.destroy();
+    });
+}
+
 module.exports={
     consultaBd,
-    actualizar
+    actualizar,
+    insertar
 }
 
 

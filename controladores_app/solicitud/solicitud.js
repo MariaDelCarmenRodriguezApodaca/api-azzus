@@ -1,8 +1,8 @@
 'use strict'
-// let moment = require('moment');
-let request = require('request');
+const moment = require('moment');
+const request = require('request');
 // let basicas = require('../basicas');
-let consultaBd = require('../consultasBd');
+const consultaBd = require('../consultasBd');
 //TABLA DE OPERADORES ACTIVOS 
 let operadores = []; 
 //TABLA DE SOLICITUDES 
@@ -146,11 +146,14 @@ function nuevaSolicitud(req,res){
     mayorCosto = req.body.mayorCosto,menorCosto = req.body.menorCosto,hombre = req.body.hombre,
     mujer = req.body.mujer,conTransporte = req.body.conTransporte,idServicio = req.body.id_servicio,
     fecha = req.body.fecha,hora = req.body.hora, descripcion=req.body.descripcion, nombreServicio = req.body.nombre_servicio;
-    //buscamos al solicitante en la base de datos
+    
+    
+
+    
     let sql = `SELECT * FROM usuarios WHERE id_usuario= ${id_solicitante}`;
     consultaBd.consultaBd(sql,(result)=>{
         if(result) {
-            console.log(result);
+            //console.log(result);
             let nombreSolicitante = result[0].nombre + " " + result[0].ap + " " + result[0].am ;  
             let telefono = result[0].telefono;
             let correo = result[0].correo;
@@ -167,7 +170,6 @@ function nuevaSolicitud(req,res){
         }
 
     });
-    
 }
 //res servidor a solicitante /EL SERVIDOR RESPONDE A SOLICITANTES DESPUES DE MANDAR SOLICITUD
 function responderSolicitudASolicitante(req,res){
@@ -206,6 +208,7 @@ function responderSolicitudASolicitante(req,res){
     }else if(solicitudes[solicitud].estatus=='pendiente'){
         buscarOperadorPorFiltros(solicitudes[solicitud].id_solicitante); //si aun no la aceptan se busca al operador de nuevo
         res.status(200).send({message:[{'flag':'false','cuerpo':[{'nombre':'estatus pendiente'}]}]});
+        console.log(solicitudes[solicitud]);
     }else if(solicitudes[solicitud].estatus=='enEspera'){
         res.status(200).send({message:[{'flag':'false','cuerpo':[{'nombre':'Esperando respuesta de operador'}]}]});
     }else{
@@ -252,7 +255,7 @@ function operadorDesactivado(req,res){
     var flag=buscarOperador(id_operador);
     if(flag.flag==true){
         operadores.splice(flag.i-1,1);
-        
+        res.status(200).send({message:[{'flag':'guardada','se guardo solicitud en la base de datos':[]}]});
         console.log('Operador desconectado...Tabla Operadores Actualizada: ');
         console.log(operadores);
         res.status(200).send({message:['Estado: Desconectado']})
@@ -266,24 +269,62 @@ function operadorDesactivado(req,res){
 function operadorAceptoSolicitud(req,res){
     let id_operador= req.params.id, id_solicitante = req.params.id_solicitante;
     let solicitud = buscarSolicitud(id_solicitante);
+    let flag=buscarOperador(id_operador);
+
+
     solicitudes[solicitud].estatus='aceptada';
     solicitudes[solicitud].operador= id_operador;
-    console.log(`solicitud de : ${ solicitudes[solicitud].id_solicitante } fue ${ solicitudes[solicitud].estatus }
-    por el operador: ${ id_operador }`);
-    //buscamos la lat y lng del operador para agregarlos al row de la solicitud en el arreglo
-    let flag=buscarOperador(id_operador);
-    solicitudes[solicitud].latOperador = operadores[flag.i-1].lat;
-    solicitudes[solicitud].lngOperador = operadores[flag.i-1].lng;
-    if(flag.flag){//verificamos que el operador este en el arreglo
-        operadores.splice(flag.i-1,1);
-        let rechazada = verificarRechazo(id_operador);
-        if(rechazada.flag){//verificamos si alguien rechazo la solicitud
-            arregloSolicitudRechazada.splice(rechazada.pos,1); //la eliminamos del arreglo de rechazadas
+
+
+   //AQUI VA LA FECHA POR EJEMPLO
+   var date = new Date();
+   var fechaActual = moment(date).format('YYYY-MM-DD');
+   console.log(` fechas ${ fechaActual } == ${solicitudes[solicitud].fecha}`);
+   if(fechaActual < solicitudes[solicitud].fecha ){
+       //aqui se guardara
+       console.log(`se guardardo en base de datos solicitud agendada`);
+       let sql = `INSERT INTO solicitud 
+                (id_solicitud, id_solicitante, id_operador, id_servicio, fecha, hora, lat_inicio, lng_inicio, lat_fin, lng_fin, costo, estatus) 
+                VALUES 
+                ('NULL', 
+                '${solicitudes[solicitud].id_solicitante}',
+                '${solicitudes[solicitud].id_operador}',
+                '${solicitudes[solicitud].id_servicio}', 
+                '${solicitudes[solicitud].fecha}', 
+                '${solicitudes[solicitud].hora}', 
+                '${operadores[flag.i-1].lat}', 
+                '${operadores[flag.i-1].lng}', 
+                '${solicitudes[solicitud].lat}', 
+                '${solicitudes[solicitud].lng}', 
+                '${solicitudes[solicitud].costo}', 
+                'AGENDADA'
+                )`;
+       consultaBd.insertar(sql,(result)=>{
+            if(result){
+                console.log('se guardo en la base de datos solicitud agendada');
+                res.status(200).send({message:[{'flag':'guardado','cuerpo':[]}]});
+            }
+       })
+   }else{
+        //buscamos al solicitante en la base de datos
+        
+        console.log(`solicitud de : ${ solicitudes[solicitud].id_solicitante } fue ${ solicitudes[solicitud].estatus }
+        por el operador: ${ id_operador }`);
+        //buscamos la lat y lng del operador para agregarlos al row de la solicitud en el arreglo
+        let flag=buscarOperador(id_operador);
+        solicitudes[solicitud].latOperador = operadores[flag.i-1].lat;
+        solicitudes[solicitud].lngOperador = operadores[flag.i-1].lng;
+        if(flag.flag){//verificamos que el operador este en el arreglo
+            operadores.splice(flag.i-1,1);
+            let rechazada = verificarRechazo(id_operador);
+            if(rechazada.flag){//verificamos si alguien rechazo la solicitud
+                arregloSolicitudRechazada.splice(rechazada.pos,1); //la eliminamos del arreglo de rechazadas
+            }
+            res.status(200).send({message:['Estado: Desconectado']})
+        }else{
+            res.status(404).send({message:['Error: No se encontro el operador']})
         }
-        res.status(200).send({message:['Estado: Desconectado']})
-    }else{
-        res.status(404).send({message:['Error: No se encontro el operador']})
-    }
+   }
 }
 //cuando el operador rechaza una solicitud
 function operadorRechazoSolicitud(req,res){
@@ -295,7 +336,6 @@ function operadorRechazoSolicitud(req,res){
     console.log(`El operador ${ arregloSolicitudRechazada[0].idSolicitante } rechazo la solicitud de ${ id_solicitante }`);
     res.status(200).send({message:['Mamon']});
 }
-
 
 
 module.exports={

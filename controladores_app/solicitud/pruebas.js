@@ -8,10 +8,13 @@ let basicas = require('../basicas');
 let consultaBd = require('../consultasBd');
 
 let buscarOperador = (req,res)=>{
-    let sql = `SELECT * FROM usuarios WHERE id_usuario = ${req.params.id}`;
-    consultaBd.consultaBd(sql,(result)=>{
-        if(result) console.log(result);
-    });
+    // let sql = `SELECT * FROM usuarios WHERE id_usuario = ${req.params.id}`;
+    // consultaBd.consultaBd(sql,(result)=>{
+    //     if(result) console.log(result);
+    // });
+    var date = new Date();
+    var formattedDate = moment(date).format('YYYYMMDD');
+    console.log(formattedDate);
 }
 
 
