@@ -37,6 +37,17 @@ function buscarSolicitud(id){
     }
     return i-1;
 }
+function buscarSolicitudXOperador(id){
+    var i;
+    var solicitud;
+    for(i=solicitudes.length; i > 0 ; i--){
+        if(solicitudes[i-1].operador==id){
+            solicitud=solicitudes[i-1];
+            return i-1;
+        }
+    }
+    return i-1;
+}
 function buscarSolicitudPendiente(){
     if (solicitudes.length > 0){
         var flag = solicitudes.length;
@@ -157,6 +168,7 @@ function nuevaSolicitud(req,res){
             let nombreSolicitante = result[0].nombre + " " + result[0].ap + " " + result[0].am ;  
             let telefono = result[0].telefono;
             let correo = result[0].correo;
+            let genero = result[0].genero;
             //guardamos la solicitud en la tabla en ram:
             solicitudes.push({id_servicio :idServicio,  servicio: nombreServicio,   id_solicitante:id_solicitante,
                                 nombre:nombreSolicitante,   telefono: telefono,   correo:correo,
@@ -164,7 +176,7 @@ function nuevaSolicitud(req,res){
                                 lng:lng,    costo:"",   estatus:"pendiente",
                                 operador:"",   valoracion:valoracion,   mayorCosto:mayorCosto,
                                 menorCosto:menorCosto,  hombre:hombre,  mujer:mujer,
-                                conTransporte:conTransporte, descripcion:descripcion
+                                conTransporte:conTransporte, descripcion:descripcion, generoSolicitante:genero
                             }); 
             res.status(200).send({ message: `Nueva solicitud enviada de : ${ nombreSolicitante }` });
         }
@@ -274,7 +286,7 @@ function operadorAceptoSolicitud(req,res){
 
     solicitudes[solicitud].estatus='aceptada';
     solicitudes[solicitud].operador= id_operador;
-
+    console.log('SOLICITUD AGENDADA:',solicitudes[solicitud]);
 
    //AQUI VA LA FECHA POR EJEMPLO
    var date = new Date();
@@ -335,6 +347,11 @@ function operadorRechazoSolicitud(req,res){
     arregloSolicitudRechazada.push({idSolicitante:id_solicitante,idOperador:id_operador});
     console.log(`El operador ${ arregloSolicitudRechazada[0].idSolicitante } rechazo la solicitud de ${ id_solicitante }`);
     res.status(200).send({message:['Mamon']});
+}
+
+let solicitudTerminada = ( req,res ) => {
+    let solicitud = buscarSolicitud(req.params.idOperador);
+
 }
 
 
